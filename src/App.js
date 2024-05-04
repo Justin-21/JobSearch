@@ -51,8 +51,8 @@ function App() {
   },[]);
   return (
     <div className="App">
+      <Filter />
       <JobCards jobData={jobData} />
-      {/* <Filter /> */}
     </div>
   );
 }
