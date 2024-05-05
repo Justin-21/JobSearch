@@ -1,10 +1,15 @@
 import { Box, Button, Card, CardContent, Typography } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./index.css";
 import checkIcon from "../../assets/check.png";
 import highVoltageIcon from "../../assets/highVoltageIcon.png";
 
 export default function JobCards(props: any) {
+  const [loadagain, setLoadagain] = useState<any>(0);
+  const handleChange = (item: any) => {
+    setLoadagain(loadagain + 1);
+    item.showDes = true;
+  };
   const capitalize = (str: any) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
   };
@@ -12,7 +17,7 @@ export default function JobCards(props: any) {
     <div className="container">
       {props.jobData.map((item: any) => {
         return (
-          <Box key={item.jdUid} sx={{ minWidth: 350, maxWidth: 400 }}>
+          <Box key={item.jdUid} sx={{ minWidth: 350, maxWidth: 400, minHeight: 675 }}>
             <Card
               variant="outlined"
               style={{ borderRadius: "16px", padding: 10 }}
@@ -65,9 +70,19 @@ export default function JobCards(props: any) {
                   >
                     About us
                   </Typography>
-                  <Typography variant="body2" gutterBottom textAlign={"start"}>
+                  <Typography
+                    variant="body2"
+                    gutterBottom
+                    textAlign={"start"}
+                    className={`des ${item.showDes ? "show" : ""}`}
+                  >
                     {item.jobDetailsFromCompany}
                   </Typography>
+                  {!item.showDes && (
+                    <div className="viewjob" onClick={() => handleChange(item)}>
+                      View job
+                    </div>
+                  )}
                 </div>
                 <div className="experience">
                   <Typography
