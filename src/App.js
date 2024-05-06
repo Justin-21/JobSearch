@@ -1,10 +1,14 @@
 import "./App.css";
 import JobCards from "./components/JobCards/index.tsx";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import InfiniteScroll from "react-infinite-scroller";
 
 const App = () => {
+  const [items, setItems] = useState(10);
+  const [isLoading, setIsLoading] = useState(false);
+  const [jobData, setjobData] = useState([]);
+  const [index, setIndex] = useState(2);
+  const loaderRef = useRef(null);
   const [filter, setFilter] = useState({
     minExperience: "",
     company_name: "",
@@ -53,7 +57,6 @@ const App = () => {
       "₹40,00,000",
     ],
   };
-  const [jobData, setjobData] = useState([]);
 
   const restructureData = (data) => {
     data["showDes"] = false;
@@ -64,12 +67,13 @@ const App = () => {
     }
     return true;
   };
-  const filterOut = (data, type) => {
+
+  const filterOut = (item, data, type) => {
     if (type != "pay") {
-      for (let key in data) {
+      for (let key in item) {
         if (
-          typeof data[key] == "string" &&
-          data[key].toLowerCase() == type.toLowerCase()
+          typeof item[key] == "string" &&
+          item[key].toLowerCase().includes(data.toLowerCase())
         ) {
           return false;
         }
@@ -84,11 +88,14 @@ const App = () => {
       return true;
     }
   };
-  const fetchData = (data) => {
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setItems(items + 10);
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
     const body = JSON.stringify({
-      limit: data,
+      limit: items,
       offset: 0,
     });
 
@@ -109,17 +116,53 @@ const App = () => {
         );
         setjobData(resultArray);
       });
-  };
+    setIndex((prevIndex) => prevIndex + 1);
+  });
+
   useEffect(() => {
-    // window.addEventListener("scroll", () => {
-    //   if (
-    //     window.innerHeight + document.documentElement.scrollTop ===
-    //     document.documentElement.offsetHeight
-    //   ) {
-    //       fetchData(10);
-    //   }
-    // });
-    fetchData(10);
+    const observer = new IntersectionObserver((entries) => {
+      const target = entries[0];
+      if (target.isIntersecting) {
+        fetchData();
+      }
+    });
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => {
+      if (loaderRef.current) {
+        observer.unobserve(loaderRef.current);
+      }
+    };
+  }, [fetchData]);
+
+  useEffect(() => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    const body = JSON.stringify({
+      limit: 10,
+      offset: 0,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body,
+    };
+
+    fetch(
+      "https://api.weekday.technology/adhoc/getSampleJdJSON",
+      requestOptions
+    )
+      .then((response) => response.json())
+      .then((result) => {
+        let resultArray = result.jdList.filter((obj) =>
+          restructureData(obj, null)
+        );
+        setjobData(resultArray);
+      });
   }, []);
 
   useEffect(() => {
@@ -127,7 +170,7 @@ const App = () => {
     Object.keys(filter).map((key) => {
       if (filter[key] != "") {
         debugger;
-        let resultArray = jobData.filter((obj) => filterOut(obj, filter[key]));
+        let resultArray = jobData.filter((obj) => filterOut(obj, filter[key],key));
         debugger;
         setjobData(resultArray);
       }
@@ -315,17 +358,12 @@ const App = () => {
         </div>
       </div>
       {/* Job cards */}
-      <InfiniteScroll
-        datalength={jobData.length}
-        next={fetchData(100)}
-        hasMore={true}
-      >
-        <div className="container">
-          {jobData.map((item, key) => {
-            return <JobCards key={key} item={item} />;
-          })}
-        </div>
-      </InfiniteScroll>
+      <div className="container">
+        {jobData.map((item, key) => {
+          return <JobCards key={key} item={item} />;
+        })}
+      </div>
+      <div ref={loaderRef}></div>
     </div>
   );
 };
