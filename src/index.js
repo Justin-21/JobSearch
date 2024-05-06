@@ -13,4 +13,4 @@ root.render(
 );
 reportWebVitals();
 
-// Search, Infinite Scroll
+// Search

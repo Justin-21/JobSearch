@@ -2,6 +2,7 @@ import "./App.css";
 import JobCards from "./components/JobCards/index.tsx";
 import { useEffect, useState } from "react";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import InfiniteScroll from "react-infinite-scroller";
 
 const App = () => {
   const [filter, setFilter] = useState({
@@ -54,12 +55,22 @@ const App = () => {
   };
   const [jobData, setjobData] = useState([]);
 
-  const restructureData = (data, type, key) => {
-    // for filtering the null values
-    if (type == null) {
-      data["showDes"] = false;
+  const restructureData = (data) => {
+    data["showDes"] = false;
+    for (let key in data) {
+      if (data[key] === null) {
+        return false;
+      }
+    }
+    return true;
+  };
+  const filterOut = (data, type) => {
+    if (type != "pay") {
       for (let key in data) {
-        if (data[key] === type) {
+        if (
+          typeof data[key] == "string" &&
+          data[key].toLowerCase() == type.toLowerCase()
+        ) {
           return false;
         }
       }
@@ -70,13 +81,6 @@ const App = () => {
           return false;
         }
       }
-      Object.values(data).map((value) => {
-        if (
-          typeof value == "string" &&
-          value.toLowerCase() == type.toLowerCase()
-        )
-          return false;
-      });
       return true;
     }
   };
@@ -123,9 +127,7 @@ const App = () => {
     Object.keys(filter).map((key) => {
       if (filter[key] != "") {
         debugger;
-        let resultArray = jobData.filter((obj) =>
-          restructureData(obj, filter[key], key)
-        );
+        let resultArray = jobData.filter((obj) => filterOut(obj, filter[key]));
         debugger;
         setjobData(resultArray);
       }
@@ -134,6 +136,7 @@ const App = () => {
 
   return (
     <div className="App">
+      {/* Filter Component */}
       <div className="filter" style={{ paddingLeft: "4px", width: "98%" }}>
         {/* Minimun experience */}
         <div className="filterItem">
@@ -311,7 +314,18 @@ const App = () => {
           </FormControl>
         </div>
       </div>
-      <JobCards jobData={jobData} />
+      {/* Job cards */}
+      <InfiniteScroll
+        datalength={jobData.length}
+        next={fetchData(100)}
+        hasMore={true}
+      >
+        <div className="container">
+          {jobData.map((item, key) => {
+            return <JobCards key={key} item={item} />;
+          })}
+        </div>
+      </InfiniteScroll>
     </div>
   );
 };

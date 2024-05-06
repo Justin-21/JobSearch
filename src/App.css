@@ -30,3 +30,89 @@
   position: fixed;
   top: 0;
 }
+
+.container {
+  margin-top: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 0 40px;
+}
+
+.leftCard {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.innerCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 20px;
+}
+
+.salaryCard {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.experience {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.des {
+  height: 180px;
+  background-clip: text;
+  background: -webkit-linear-gradient(#333, #eee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.aboutUs {
+  position: relative;
+}
+
+.viewjob {
+  position: absolute;
+  bottom: 0;
+  font-size: 14px;
+  color: rgb(50, 50, 243);
+  left: 40%;
+  cursor: pointer;
+}
+
+.show {
+  height: auto;
+  overflow: visible;
+  -webkit-text-fill-color: black;
+
+}
+
+.container {
+  margin-top: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 0 40px;
+}
+
