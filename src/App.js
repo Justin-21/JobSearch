@@ -5,10 +5,9 @@ import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 const App = () => {
   const [items, setItems] = useState(10);
-  const [isLoading, setIsLoading] = useState(false);
   const [jobData, setjobData] = useState([]);
-  const [index, setIndex] = useState(2);
   const loaderRef = useRef(null);
+  let resultArray 
   const [filter, setFilter] = useState({
     minExperience: "",
     company_name: "",
@@ -18,6 +17,7 @@ const App = () => {
     role: "",
     pay: "",
   });
+
   const filterOptions = {
     min_experience: ["Entry Level", "Mid-Level", "Senior Level"],
     company_name: [
@@ -75,10 +75,10 @@ const App = () => {
           typeof item[key] == "string" &&
           item[key].toLowerCase().includes(data.toLowerCase())
         ) {
-          return false;
+          return true;
         }
       }
-      return true;
+      return false;
     } else {
       for (let key in data) {
         if (data[key] === type) {
@@ -90,7 +90,6 @@ const App = () => {
   };
 
   const fetchData = useCallback(async () => {
-    setIsLoading(true);
     setItems(items + 10);
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
@@ -111,16 +110,24 @@ const App = () => {
     )
       .then((response) => response.json())
       .then((result) => {
-        let resultArray = result.jdList.filter((obj) =>
+         resultArray = result.jdList.filter((obj) =>
           restructureData(obj, null)
         );
         setjobData(resultArray);
       });
-    setIndex((prevIndex) => prevIndex + 1);
+    Object.keys(filter).map((key) => {
+      if (filter[key] != "") {
+        resultArray = jobData.filter((obj) =>
+          filterOut(obj, filter[key], key)
+        );
+        setjobData(resultArray);
+      }
+    });
   });
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
+      debugger;
       const target = entries[0];
       if (target.isIntersecting) {
         fetchData();
@@ -138,11 +145,11 @@ const App = () => {
     };
   }, [fetchData]);
 
-  useEffect(() => {
+  const fetchDataFilter = (item) => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
     const body = JSON.stringify({
-      limit: 10,
+      limit: item,
       offset: 0,
     });
 
@@ -158,21 +165,25 @@ const App = () => {
     )
       .then((response) => response.json())
       .then((result) => {
-        let resultArray = result.jdList.filter((obj) =>
-          restructureData(obj, null)
-        );
+        resultArray = result.jdList.filter((obj) => restructureData(obj));
         setjobData(resultArray);
       });
-  }, []);
+  };
+
+  useEffect(()=>{
+    console.log(resultArray)
+  },[jobData])
 
   useEffect(() => {
-    fetchData(100);
+    fetchDataFilter(100);
     Object.keys(filter).map((key) => {
       if (filter[key] != "") {
-        debugger;
-        let resultArray = jobData.filter((obj) => filterOut(obj, filter[key],key));
-        debugger;
+        resultArray = [];
+        resultArray = jobData.filter((obj) => {
+          return filterOut(obj, filter[key], key);
+        });
         setjobData(resultArray);
+        // console.log(jobData, resultArray);
       }
     });
   }, [filter]);
